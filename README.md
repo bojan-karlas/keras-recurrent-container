@@ -52,7 +52,15 @@ data_out = l_rcontainer(sequences=data_in)
 
 model = Model(inputs=data_in, outputs=data_out)
 ```
-First we always need to construct the graph of the recurrent model. The `RecurrentContainer` is instantiated by providing input and output tensors of the graph. When the recurrent container is called, input tensors are grouped according to their semantics into three groups:
+First we always need to construct the graph of the recurrent model. The `RecurrentContainer` is instantiated by providing input and output tensors of the graph. They are separated according to their semantics:
+* `sequence_inputs`: Tensors that will be fed one 2D matrix in each timestep of the sequence.
+* `sequence_outputs`: Tensors that will output one 2D matrix in each timestep of the sequence.
+* `constant_inputs`: 2D tensors that are fed to the graph and remain constant throughout the whole sequence.
+* `constant_outputs`: 2D tensors that are outputted from the network at the final timestep of the sequence.
+* `state_inputs`: Tensors that will be fed with 2D values that were outputted by `state_outputs` in the previous timestep.
+* `state_outputs`: Tensors that will output a 2D state value in each timestep that will be fed into `state_inputs` in the next timestep.
+
+When the recurrent container is called, input tensors are grouped according to their semantics into three groups:
 * `sequences`: 3D tensors of shape `(batch_size, timesteps, input_dim)` which are sliced over the `timesteps`. The slices are fed one by one in each timestep into corresponding 2D tensors of the recurrent model graph.
 * `constants`: 2D tensors of shape `(batch_size, input_dim)` that will be fed directly into the corresponding tensors of the recurrent model graph. They are used when we want to feed the same input to all timesteps.
-* `states`: 2D tensors of shape `(batch_size, num_units)` that are fed in the first timestep to initialize the state input tensors of the recurrent model graph.
+* `states`: 2D tensors of shape `(batch_size, num_units)` that are fed in the first timestep to initialize the state input tensors of the recurrent model graph. If they are omitted when `RecurrentContainer` is called, the state tensors are initialized with all-zero matrices.
